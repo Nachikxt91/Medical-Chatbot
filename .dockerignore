@@ -1,15 +1,47 @@
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
 *.pyc
 *.pyo
 *.pyd
 .Python
+
+# Virtual environments
 venv/
 env/
-.env
+.venv
+ENV/
+back/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
 .git/
 .gitignore
-*.md
+
+# Environment files
+.env
+.env.local
+
+# Development files
 trials.ipynb
 research/
-.vscode/
 *.log
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data (if large)
+# data/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

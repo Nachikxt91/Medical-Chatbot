@@ -1,24 +1,31 @@
 ---
-title: MedBot
-emoji: 🚀
-colorFrom: green
-colorTo: pink
-sdk: docker
-pinned: false
----
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
-
-
----
-title: RAG Medical Chatbot
+title: Medical AI Chatbot
 emoji: 🏥
 colorFrom: blue
-colorTo: green
+colorTo: purple
 sdk: docker
-app_port: 8080
+app_port: 7860
+pinned: false
+tags:
+  - medical
+  - chatbot
+  - rag
+  - langchain
+  - ai
 ---
 
-# RAG Medical Chatbot
+# Medical AI Assistant 🏥
 
-AI-powered medical chatbot using RAG.
+An intelligent medical chatbot using RAG (Retrieval-Augmented Generation) with dynamic Chain-of-Thought reasoning.
+
+## Features
+- 🧠 Dynamic CoT reasoning for complex queries
+- 🚨 Emergency detection and priority handling
+- 💬 Conversational memory
+- 📚 RAG-based medical knowledge retrieval
+
+## Tech Stack
+- **LangChain** - RAG orchestration
+- **Groq** - Fast LLM inference
+- **Pinecone** - Vector database
+- **Flask** - Web framework

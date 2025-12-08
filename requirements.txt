@@ -1,16 +1,24 @@
+# Core Flask
+flask==3.1.0
+werkzeug==3.1.0
+
+# LangChain Core
 langchain==0.3.26
-langchain-community==0.3.26
 langchain-core==0.3.76
+langchain-community==0.3.18
+
+# LangChain Integrations
+langchain-groq==1.0.0
+langchain-pinecone==0.2.0
 langchain-huggingface==0.3.1
-langchain-pinecone==0.2.8
-langchain-text-splitters==0.3.11
-flask==3.1.1
-sentence-transformers==4.1.0
-pypdf==5.6.1
-python-dotenv==1.1.0
-transformers==4.45.2
-huggingface-hub==0.35.3
-pinecone==7.3.0
-torch==2.1.2
+
+# Vector Database
+pinecone-client==5.0.1
+
+# Utilities
+python-dotenv==1.0.1
+pypdf==5.1.0
 numpy==1.26.4
-langchain-groq>=0.1.0
+
+# Production Server
+gunicorn==23.0.0

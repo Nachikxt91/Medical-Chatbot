@@ -206,3 +206,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Hugging Face Spaces specific
+.space/
+
+# Large model files (if any)
+models/
+*.bin
+*.safetensors
+
+# Data directory (optional, depending on your data)
+# data/
