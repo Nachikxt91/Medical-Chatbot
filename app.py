@@ -11,6 +11,7 @@ from src.helper import download_embeddings
 import os
 import re
 import uuid
+import json
 
 load_dotenv()
 
@@ -25,51 +26,56 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
         conversation_store[session_id] = InMemoryChatMessageHistory()
     return conversation_store[session_id]
 
-
 # ============================================================================
-# INTELLIGENT QUERY ANALYZER - LLM-DRIVEN (NO KEYWORDS)
+# IMPROVED QUERY ANALYZER WITH BETTER CLASSIFICATION
 # ============================================================================
 
 def analyze_query_with_llm(user_message: str) -> dict:
     """
-    Use LLM to intelligently analyze the query without predefined keywords.
+    Use LLM to intelligently analyze the query with improved classification.
     Returns classification of query type and reasoning requirements.
     """
     
-    analysis_prompt = """You are a medical query analyzer. Analyze the following user query and determine:
+    analysis_prompt = """
+You are a **medical query classifier** for a Medical AI Assistant.
 
-1. **Query Type**: 
-   - "greeting" (hello, hi, casual chat)
-   - "medical" (health/medical question)
-   - "non_medical" (unrelated to health)
+Analyze the user's message and return a JSON object with:
 
-2. **Medical Urgency** (if medical):
-   - "emergency" (life-threatening, needs immediate attention)
-   - "urgent" (needs medical attention soon)
-   - "routine" (general medical information)
-   - "not_applicable" (not medical)
+1. "query_type":
+   - "greeting"  → greetings, thanks, goodbyes, casual small talk
+   - "medical"   → health, symptoms, diseases, treatments, medications, lifestyle and prevention
+   - "non_medical" → anything not related to health or medicine
 
-3. **Reasoning Complexity** (if medical):
-   - "complex" (requires step-by-step explanation: mechanisms, comparisons, multi-faceted conditions, causation)
-   - "simple" (straightforward definition or fact)
-   - "not_applicable" (not medical)
+2. "urgency" (only if query_type = "medical"):
+   - "emergency" → possible life‑threatening issues (for example: chest pain, stroke signs, suicidal thoughts, severe breathing difficulty, heavy bleeding, major trauma)
+   - "urgent" → needs attention soon but not obviously life‑threatening (for example: very high fever, severe pain, new serious symptoms, significant injury)
+   - "routine" → general medical information, education, or non‑acute questions
+   - "not_applicable" → for non‑medical queries
 
-4. **Brief Reasoning**: Explain WHY you classified it this way (1-2 sentences)
+3. "complexity" (only if query_type = "medical"):
+   - "complex" → requires step‑by‑step reasoning, mechanisms, comparisons, differential diagnosis, or multi‑step explanations
+     Examples: "How does HIV lead to AIDS?", "Compare type 1 and type 2 diabetes", "Explain how ACE inhibitors work"
+   - "simple" → definitions, straightforward facts, yes/no questions, single‑concept explanations
+     Examples: "What is AIDS?", "Is there a cure for AIDS?", "What are the symptoms of flu?"
+   - "not_applicable" → for non‑medical queries
+
+4. "reasoning":
+   - One short sentence explaining why you chose the labels above.
 
 User Query: "{query}"
 
-Respond ONLY in this JSON format:
+Respond with **only** a valid JSON object in this exact structure:
 {{
-    "query_type": "medical|greeting|non_medical",
-    "urgency": "emergency|urgent|routine|not_applicable",
-    "complexity": "complex|simple|not_applicable",
-    "reasoning": "Your brief explanation"
+  "query_type": "medical|greeting|non_medical",
+  "urgency": "emergency|urgent|routine|not_applicable",
+  "complexity": "complex|simple|not_applicable",
+  "reasoning": "your brief explanation"
 }}
-"""
+""".strip()
 
     analysis_llm = ChatGroq(
         model="llama-3.3-70b-versatile",
-        temperature=0.1,  # Low temperature for consistent classification
+        temperature=0.1,
         max_tokens=200,
         timeout=15,
         max_retries=2,
@@ -83,139 +89,171 @@ Respond ONLY in this JSON format:
         content = response.content.strip()
         
         # Remove markdown code blocks if present
-        content = re.sub(r'``````', '', content)
+        content = re.sub(r'```json\s*|\s*```', '', content)
         
-        import json
+        # Try to find JSON pattern
+        json_match = re.search(r'\{.*\}', content, re.DOTALL)
+        if json_match:
+            content = json_match.group(0)
+        
         analysis = json.loads(content)
         
         print(f"[LLM Analysis] Query: '{user_message[:50]}...'")
         print(f"[LLM Analysis] Result: {analysis}")
         
+        # Additional safety checks
+        if analysis["query_type"] == "medical":
+            # Force simple complexity for basic definition questions
+            basic_question_patterns = [
+                r'(what is|what are|define|explain briefly|tell me about)',
+                r'(is there a cure|cure for|can you cure|treatment for)',
+                r'(symptoms of|signs of|causes of|risk factors for)',
+                r'(how to (treat|prevent|diagnose)|prevention of|diagnosis of)',
+                r'(yes or no|simple explanation|basic info)'
+            ]
+            
+            query_lower = user_message.lower()
+            is_basic_question = any(
+                re.search(pattern, query_lower) 
+                for pattern in basic_question_patterns
+            )
+            
+            if is_basic_question and analysis["complexity"] == "complex":
+                print(f"[LLM Analysis] Overriding: Basic question detected, setting complexity to simple")
+                analysis["complexity"] = "simple"
+                analysis["reasoning"] = "Basic fact/definition question requiring straightforward answer"
+        
         return analysis
         
     except Exception as e:
         print(f"[LLM Analysis Error]: {str(e)}")
-        # Fallback to safe defaults
+        print(f"[LLM Analysis] Raw response: {response.content if 'response' in locals() else 'No response'}")
+        # Fallback to simple for most queries
         return {
             "query_type": "medical",
             "urgency": "routine",
             "complexity": "simple",
-            "reasoning": "Defaulted due to analysis error"
+            "reasoning": "Defaulted due to analysis error - assuming simple medical query"
         }
 
-
 # ============================================================================
-# DYNAMIC CHAIN-OF-THOUGHT SYSTEM PROMPTS
+# IMPROVED DYNAMIC PROMPTS WITH BETTER FORMATTING
 # ============================================================================
 
 # For COMPLEX queries requiring step-by-step reasoning
-complex_medical_prompt = """You are an expert Medical AI Assistant specializing in detailed, evidence-based explanations.
+complex_medical_prompt = """
+You are an expert **Medical AI Assistant** that explains medical topics in depth using clear, evidence‑informed reasoning. 
+You are providing **general educational information only**, not diagnosis or treatment.
 
-**YOUR TASK**: Provide a comprehensive Chain-of-Thought (CoT) response that breaks down complex medical information step-by-step.
+Formatting rules:
+- Use **bold** for key medical terms and section titles.
+- Use short paragraphs and bullet lists for readability.
+- Organize your answer into logical sections with clear headings.
+- Keep the language accessible to an educated layperson.
 
-**Chain-of-Thought Framework** (use when appropriate):
+Use structured, step‑by‑step reasoning internally, but do **not** show chain‑of‑thought explicitly. 
+Instead, present a clear, well‑organized explanation.
 
-🔍 **Step 1: Understanding the Query**
-- Identify the core medical question or concern
-- Highlight key medical terms or concepts involved
+Recommended answer structure (adapt as needed for the question):
 
-🧠 **Step 2: Analyzing Medical Context**
-- Explain the underlying medical mechanisms or processes
-- Connect relevant physiological or pathological concepts
+**Direct Answer**
+- 1–3 sentences that directly answer the user’s main question.
 
-📋 **Step 3: Breaking Down the Information**
-- Provide detailed explanation with medical evidence
-- Include causes, symptoms, or mechanisms as relevant
-- Explain interconnections between concepts
+**Overview**
+- Briefly define or describe the main condition, concept, or problem.
 
-💡 **Step 4: Practical Implications**
-- Summarize key takeaways
-- Mention treatment approaches or management strategies (if applicable)
-- Include important considerations or warning signs
+**Detailed Explanation**
+- Explain important mechanisms, processes, or comparisons in a logical order.
+- Clarify how different factors are related.
+- When helpful, break complex ideas into short bullet points.
 
-⚠️ **Step 5: Medical Disclaimer**
-- Emphasize the importance of professional medical consultation
-- Clarify limitations of general information
+**Key Points**
+- Summarize the most important takeaways in 3–5 bullets.
 
-**IMPORTANT RULES**:
-- Base ALL information on the Retrieved Context provided below
-- If context is insufficient, clearly state: "The available medical information doesn't cover this aspect in detail."
-- Use clear, accessible language while maintaining medical accuracy
-- Structure your response with proper HTML formatting (headers, lists, emphasis)
-- Always provide evidence-based information
+**When to Seek Medical Help**
+- Highlight red‑flag symptoms or situations where someone should contact a doctor or emergency services.
 
-**Retrieved Context from Medical Database:**
+Use the retrieved context from the medical database to stay **consistent with evidence‑based guidelines** when possible. Do not invent specific statistics or guideline names if they are not present in the context.
+
+Retrieved Context:
 {context}
 
-**Conversation History:**
+Conversation History:
 {chat_history}
 
-Now, analyze the user's query and provide a structured Chain-of-Thought response based on the retrieved medical context."""
+User Question:
+{input}
+""".strip()
 
 
-# For SIMPLE queries requiring direct answers
-simple_medical_prompt = """You are a Medical Information Assistant providing clear, concise medical answers.
+# For SIMPLE queries - PROFESSIONAL FORMATTING
+simple_medical_prompt = """
+You are a helpful **Medical Information Assistant**. 
+Provide clear, concise, and medically sound educational information only (no diagnosis or treatment decisions).
 
-**YOUR TASK**: Provide a direct, accurate answer to the user's medical question based on retrieved context.
+Formatting rules (strict):
+- Use **bold** for section titles and important medical terms.
+- Use "- " for all bullet points (no "*", "+", or numbered lists unless the user explicitly asks for steps).
+- Keep sentences short and direct.
+- Avoid revealing your internal reasoning or chain‑of‑thought.
 
-**Response Guidelines**:
-- Give a clear, concise answer (2-4 paragraphs)
-- Use simple, accessible language
-- Include key facts from the medical context
-- Add relevant examples or clarifications if helpful
-- Always include a brief medical disclaimer
+Use this structure unless the question clearly requires a different format:
 
-**IMPORTANT RULES**:
-- Base ALL information on the Retrieved Context provided below
-- If context is insufficient, state: "I don't have detailed information about this in my medical database."
-- Use proper HTML formatting for readability
-- Avoid unnecessary complexity for straightforward questions
+**Direct Answer**
+- 1–2 sentences that directly answer the user’s question.
 
-**Retrieved Context from Medical Database:**
+**Key Information**
+- Bullet points with core facts the user should know.
+- Define important terms in simple language.
+
+**Symptoms and Causes** (only if relevant)
+- Brief bullets for typical **symptoms**.
+- Brief bullets for common **causes** or risk factors.
+
+**Important Considerations**
+- When to consult a doctor or specialist.
+- General treatment approaches in neutral, non‑prescriptive terms.
+- Any major warnings or limitations.
+
+Use the retrieved context from the medical database to keep information aligned with current medical knowledge. Do not fabricate details that are not supported by the context.
+
+Retrieved Context:
 {context}
 
-**Conversation History:**
+Conversation History:
 {chat_history}
 
-Provide a direct answer to the user's question based on the medical context above."""
+User Question:
+{input}
+""".strip()
 
 
 # For EMERGENCY queries
-emergency_medical_prompt = """You are a Medical Emergency Response Assistant providing urgent guidance.
+emergency_medical_prompt = """You are a Medical Emergency Response Assistant.
 
-**CRITICAL ROLE**: Analyze this potential medical emergency and provide immediate, actionable guidance.
+**URGENT RESPONSE FORMAT**:
 
-**Emergency Response Framework**:
+**🚨 IMMEDIATE ACTION REQUIRED**
+[Clear numbered steps with bold critical actions]
 
-🚨 **Severity Assessment**
-- Determine urgency level: Life-threatening | Urgent | Moderate concern
-- Identify critical symptoms requiring immediate attention
+**⚠️ CRITICAL WARNING SIGNS**
+[List with bold important symptoms]
 
-⚡ **Immediate Actions**
-- Provide clear, numbered steps for immediate response
-- Indicate when to call emergency services (ambulance/911)
-- Include first-aid measures if applicable
+**🏥 SEEK MEDICAL CARE NOW**
+[Specific instructions with bold locations/actions]
 
-⚠️ **Warning Signs**
-- List symptoms that require immediate escalation
-- Explain what to watch for while seeking help
-
-🏥 **Next Steps**
-- Recommend medical facility (ER vs urgent care vs doctor)
-- Mention what information to provide to medical professionals
-
-**CRITICAL RULES**:
-- Always err on the side of caution
-- Recommend emergency services for life-threatening situations
-- Be direct, clear, and empathetic
-- Include strong medical disclaimer
-- Use the retrieved medical context to inform your response
+**DO NOT DELAY** - Call emergency services immediately for:
+- **Chest pain or pressure**
+- **Difficulty breathing**
+- **Severe bleeding**
+- **Sudden weakness or numbness**
 
 **Retrieved Medical Context:**
 {context}
 
-Based on the emergency query, provide immediate guidance with appropriate urgency level and clear action steps."""
+**User Query: {input}**
 
+Provide immediate, actionable emergency guidance with bold critical information."""
 
 # For GREETINGS and CASUAL responses
 def generate_greeting_response(user_message: str) -> str:
@@ -227,39 +265,38 @@ def generate_greeting_response(user_message: str) -> str:
     
     if name_match:
         name = name_match.group(1).capitalize()
-        return f"Nice to meet you, {name}! 😊 I'm your Medical AI Assistant. How can I help you with medical information today?"
+        return f"<strong>Nice to meet you, {name}!</strong> 😊 I'm your Medical AI Assistant. How can I help you with medical information today?"
     
     if any(greeting in message_lower for greeting in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening']):
-        return "Hello! 👋 I'm your Medical AI Assistant. I can help you understand medical conditions, symptoms, and treatments. What would you like to know?"
+        return "<strong>Hello! 👋</strong> I'm your <strong>Medical AI Assistant</strong>. I can help you understand medical conditions, symptoms, and treatments. What would you like to know?"
     
     if any(thanks in message_lower for thanks in ['thank', 'thanks', 'appreciate']):
-        return "You're welcome! 😊 Feel free to ask if you have any other medical questions. Stay healthy!"
+        return "<strong>You're welcome! 😊</strong> Feel free to ask if you have any other medical questions. <strong>Stay healthy!</strong>"
     
     if any(bye in message_lower for bye in ['bye', 'goodbye', 'see you']):
-        return "Goodbye! Take care of your health. Feel free to return anytime you have medical questions! 👋"
+        return "<strong>Goodbye!</strong> Take care of your health. Feel free to return anytime you have medical questions! 👋"
     
     # Generic casual response
-    return "I'm here to help! 😊 Do you have any medical questions or health concerns I can assist with?"
-
+    return "I'm here to help! 😊 Do you have any <strong>medical questions</strong> or <strong>health concerns</strong> I can assist with?"
 
 # ============================================================================
 # INITIALIZE LLMs AND CHAINS
 # ============================================================================
 
-# Complex query LLM (higher token limit for detailed reasoning)
+# Complex query LLM
 complex_llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.3,
-    max_tokens=1000,
+    max_tokens=800,
     timeout=30,
     max_retries=2,
 )
 
-# Simple query LLM
+# Simple query LLM - with lower temperature for more direct answers
 simple_llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.2,
-    max_tokens=500,
+    max_tokens=600,
     timeout=25,
     max_retries=2,
 )
@@ -267,8 +304,8 @@ simple_llm = ChatGroq(
 # Emergency LLM
 emergency_llm = ChatGroq(
     model="llama-3.3-70b-versatile",
-    temperature=0.4,
-    max_tokens=700,
+    temperature=0.1,
+    max_tokens=500,
     timeout=30,
     max_retries=2,
 )
@@ -278,12 +315,11 @@ embeddings = download_embeddings()
 index_name = os.getenv("PINECONE_INDEX_NAME", "medical-chatbot")
 vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
 
-# Retriever with adjusted parameters for better context retrieval
+# Retriever with adjusted parameters
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
     search_kwargs={"k": 5, "score_threshold": 0.5}
 )
-
 
 def create_conversational_chain(system_prompt: str, llm):
     """Create a conversational RAG chain with given prompt and LLM"""
@@ -306,7 +342,6 @@ def create_conversational_chain(system_prompt: str, llm):
     
     return conversational_chain
 
-
 # ============================================================================
 # FLASK ROUTES
 # ============================================================================
@@ -316,7 +351,6 @@ def index():
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4())
     return render_template("chat.html")
-
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -332,19 +366,16 @@ def chat():
         
         session_id = session['session_id']
         
-        # ============================================================
-        # STEP 1: LLM-DRIVEN QUERY ANALYSIS (NO KEYWORDS)
-        # ============================================================
+        # STEP 1: LLM-DRIVEN QUERY ANALYSIS
         analysis = analyze_query_with_llm(user_message)
         
         query_type = analysis.get("query_type", "medical")
         urgency = analysis.get("urgency", "routine")
         complexity = analysis.get("complexity", "simple")
         
-        # ============================================================
-        # STEP 2: HANDLE NON-MEDICAL AND GREETINGS
-        # ============================================================
+        print(f"[Query Processing] Type: {query_type}, Urgency: {urgency}, Complexity: {complexity}")
         
+        # STEP 2: HANDLE NON-MEDICAL AND GREETINGS
         if query_type == "greeting":
             response_msg = generate_greeting_response(user_message)
             
@@ -362,14 +393,14 @@ def chat():
         
         if query_type == "non_medical":
             response_msg = (
-                "I'm a specialized medical AI assistant focused on <strong>health, medical conditions, "
+                "<strong>I'm a specialized medical AI assistant</strong> focused on <strong>health, medical conditions, "
                 "symptoms, and treatments</strong>. 🏥<br><br>"
                 "<strong>I can help with:</strong><br>"
-                "• Medical conditions and diseases<br>"
-                "• Symptoms and their significance<br>"
-                "• Treatment options and medications<br>"
-                "• Health-related questions<br><br>"
-                "Please ask a medical or health-related question! 😊"
+                "• <strong>Medical conditions</strong> and diseases<br>"
+                "• <strong>Symptoms</strong> and their significance<br>"
+                "• <strong>Treatment options</strong> and medications<br>"
+                "• <strong>Health-related</strong> questions<br><br>"
+                "Please ask a <strong>medical or health-related</strong> question! 😊"
             )
             
             history = get_session_history(session_id)
@@ -384,23 +415,19 @@ def chat():
                 "uses_cot": False
             })
         
-        # ============================================================
-        # STEP 3: HANDLE MEDICAL QUERIES WITH DYNAMIC COT
-        # ============================================================
-        
-        # Select appropriate chain based on LLM analysis
+        # STEP 3: HANDLE MEDICAL QUERIES WITH DYNAMIC RESPONSE FORMAT
         if urgency == "emergency":
-            print(f"[Processing] EMERGENCY query with CoT reasoning")
+            print(f"[Processing] EMERGENCY query")
             chain = create_conversational_chain(emergency_medical_prompt, emergency_llm)
             uses_cot = True
             
         elif complexity == "complex":
-            print(f"[Processing] COMPLEX query with CoT reasoning")
+            print(f"[Processing] COMPLEX query with structured reasoning")
             chain = create_conversational_chain(complex_medical_prompt, complex_llm)
             uses_cot = True
             
         else:  # simple routine queries
-            print(f"[Processing] SIMPLE query with direct answer")
+            print(f"[Processing] SIMPLE query with professional formatting")
             chain = create_conversational_chain(simple_medical_prompt, simple_llm)
             uses_cot = False
         
@@ -413,12 +440,22 @@ def chat():
         answer = response["answer"]
         context_docs = response.get("context", [])
         
-        # Format and enhance response
-        formatted_answer = format_response(answer)
+        # Format response with improved formatting
+        formatted_answer = format_response(
+            answer,
+            uses_cot,
+            is_emergency=(urgency == "emergency")
+        )
         
-        # Add disclaimer if not present
-        if "consult" not in formatted_answer.lower() and urgency != "emergency":
-            formatted_answer += '<br><br><em>💡 Always consult healthcare professionals for proper diagnosis and treatment.</em>'
+        # Add disclaimer if not present and not emergency
+        if urgency != "emergency" and "consult" not in formatted_answer.lower():
+            disclaimer = '''
+            <div class="disclaimer-box">
+                <strong>⚠️ Medical Disclaimer:</strong> This information is for educational purposes only. 
+                Always consult qualified healthcare professionals for diagnosis and treatment.
+            </div>
+            '''
+            formatted_answer += disclaimer
         
         return jsonify({
             "status": "success",
@@ -438,7 +475,6 @@ def chat():
             "message": "An error occurred while processing your request. Please try again."
         }), 500
 
-
 @app.route("/clear_history", methods=["POST"])
 def clear_history():
     """Clear conversation history and start fresh"""
@@ -455,7 +491,6 @@ def clear_history():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 @app.route("/debug/history")
 def debug_history():
@@ -475,59 +510,77 @@ def debug_history():
         })
     return jsonify({"messages": [], "session_id": None})
 
+def format_response(text: str, is_cot_response: bool = False, is_emergency: bool = False) -> str:
+    """Format response text with professional HTML formatting"""
 
-@app.route("/debug/analyze", methods=["POST"])
-def debug_analyze():
-    """Debug endpoint to test query analysis"""
-    data = request.get_json()
-    user_message = data.get("message", "")
-    
-    if not user_message:
-        return jsonify({"error": "No message provided"}), 400
-    
-    analysis = analyze_query_with_llm(user_message)
-    return jsonify(analysis)
-
-
-def format_response(text: str) -> str:
-    """Format response text with proper HTML and CoT structure"""
-    
-    # Format markdown-style emphasis
+    # --- 1) Light markdown to HTML ---
+    # Bold
     text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
-    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
-    
-    # Format CoT step headers with emojis
-    text = re.sub(
-        r'(🔍|🧠|📋|💡|⚠️|🚨|⚡)\s*\*\*Step \d+:([^*]+)\*\*',
-        r'<h4 style="color:#2563eb;margin-top:15px;margin-bottom:8px;">\1 \2</h4>',
-        text
-    )
-    
-    # Format section headers
-    text = re.sub(
-        r'\*\*([^*]+)\*\*:',
-        r'<h4 style="color:#2563eb;margin-top:12px;margin-bottom:6px;">\1:</h4>',
-        text
-    )
-    
-    # Format bullet points
-    text = re.sub(r'^[•\-]\s+(.+?)$', r'<li>\1</li>', text, flags=re.MULTILINE)
-    text = re.sub(r'^(\d+)\.\s+(.+?)$', r'<li><strong>\1.</strong> \2</li>', text, flags=re.MULTILINE)
-    
-    # Wrap lists in ul tags
-    if '<li>' in text:
-        text = re.sub(
-            r'(<li>.*?</li>)+',
-            r'<ul style="margin:8px 0;padding-left:25px;line-height:1.6;">\g<0></ul>',
-            text,
-            flags=re.DOTALL
-        )
-    
-    # Convert newlines to br tags
-    text = text.replace('\n\n', '<br><br>')
-    text = text.replace('\n', '<br>')
-    
-    return text
+    # Italic (single *)
+    text = re.sub(r'\*(?!\*)(.+?)\*(?!\*)', r'<em>\1</em>', text)
+
+    # --- 2) Convert to lines and build simple lists ---
+    lines = text.split("\n")
+    html_parts = []
+    in_list = False
+
+    section_title_pattern = re.compile(r'^([A-Z][A-Za-z ]+):$')
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Section title (e.g., "Direct Answer:")
+        if section_title_pattern.match(stripped):
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            title = stripped[:-1]  # remove colon
+            html_parts.append(f'<div class="section-title"><strong>{title}</strong></div>')
+            continue
+
+        # Bullet list item: -, *, +
+        if stripped.startswith(("-", "*", "+")) and len(stripped) > 1 and stripped[1] == " ":
+            if not in_list:
+                html_parts.append('<ul class="bullet-list">')
+                in_list = True
+            item_text = stripped[2:].strip()
+            html_parts.append(f"<li>{item_text}</li>")
+        else:
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            html_parts.append(stripped + "<br>")
+
+    if in_list:
+        html_parts.append("</ul>")
+
+    text = "".join(html_parts)
+
+    # --- 3) Wrap in containers (same visual chrome) ---
+    if is_cot_response:
+        wrapper = f"""
+        <div class="structured-response">
+            <div class="response-header">
+                <i class="fas fa-brain"></i> Detailed Medical Analysis
+            </div>
+            <div class="response-content">
+                {text}
+            </div>
+        </div>
+        """
+    else:
+        wrapper = f"""
+        <div class="simple-response">
+            <div class="response-header">
+                <i class="fas fa-stethoscope"></i> Medical Information
+            </div>
+            <div class="response-content">
+                {text}
+            </div>
+        </div>
+        """
+
+    return wrapper
 
 
 if __name__ == "__main__":
