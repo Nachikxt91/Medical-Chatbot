@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical AI Assistant - Smart Healthcare Chatbot</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,103 +14,300 @@
         }
 
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #10b981;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --chat-bg: #f8fafc;
-            --user-msg-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --bot-msg-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --primary-color: #4facfe;
+            --primary-dark: #2c8ef8;
+            --secondary-color: #00D4AA;
+            --accent-color: #FF6B8B;
+            --warning-color: #FFA500;
+            --danger-color: #FF4757;
+            --success-color: #00D4AA;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+            --border-color: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-glow: 0 0 20px rgba(79, 172, 254, 0.2);
+            --border-radius-sm: 12px;
+            --border-radius-md: 16px;
+            --border-radius-lg: 24px;
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-gradient);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            opacity: 0.08;
+            filter: blur(40px);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape-1 { width: 400px; height: 400px; top: -100px; left: -100px; animation-delay: 0s; }
+        .shape-2 { width: 300px; height: 300px; bottom: -50px; right: -50px; animation-delay: 5s; }
+        .shape-3 { width: 250px; height: 250px; top: 50%; left: 80%; animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        .grid-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(79, 172, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79, 172, 254, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 70%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 70%);
+        }
+
+        .main-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            height: 100vh;
             padding: 20px;
+            gap: 20px;
+        }
+
+        .side-panel {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-md);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .quick-actions-panel {
+            flex: 1;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-md);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quick-actions-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .quick-actions-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-action-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 14px;
+            color: var(--text-secondary);
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-action-btn:hover {
+            background: linear-gradient(to right, rgba(79, 172, 254, 0.05), rgba(79, 172, 254, 0.1));
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .quick-action-btn i {
+            font-size: 18px;
+            width: 24px;
+            color: inherit;
         }
 
         .chat-container {
-            width: 100%;
-            max-width: 900px;
-            height: 90vh;
-            background: white;
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
+            flex: 1;
             display: flex;
             flex-direction: column;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
-            animation: slideUp 0.4s ease-out;
+            position: relative;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .chat-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            z-index: 10;
         }
 
-        /* Header */
         .chat-header {
-            background: var(--bg-gradient);
-            color: white;
-            padding: 24px 28px;
+            padding: 25px 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: var(--shadow-md);
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-card);
         }
 
-        .header-content {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
 
-        .bot-avatar {
-            width: 52px;
-            height: 52px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        .ai-avatar {
+            width: 56px;
+            height: 56px;
+            background: var(--primary-gradient);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 26px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            animation: pulse 2s ease-in-out infinite;
+            position: relative;
+            animation: glow 2s ease-in-out infinite alternate;
+            color: white;
+        }
+
+        @keyframes glow {
+            from { box-shadow: var(--shadow-glow); }
+            to { box-shadow: 0 0 30px rgba(79, 172, 254, 0.3); }
+        }
+
+        .header-info h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .header-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .header-text h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .header-text p {
-            font-size: 13px;
-            opacity: 0.9;
-            font-weight: 400;
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .header-actions {
@@ -119,188 +316,160 @@
         }
 
         .header-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
+            color: var(--text-secondary);
             cursor: pointer;
+            transition: var(--transition-normal);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
             font-size: 18px;
         }
 
         .header-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(to bottom, rgba(79, 172, 254, 0.1), rgba(79, 172, 254, 0.2));
+            border-color: var(--primary-color);
+            color: var(--primary-color);
             transform: translateY(-2px);
         }
 
-        /* Info Banner */
-        .info-banner {
-            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
-            border-left: 4px solid var(--primary-color);
-            padding: 16px 20px;
-            margin: 16px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .info-banner i {
-            color: var(--primary-color);
-            font-size: 20px;
-        }
-
-        .info-banner p {
-            color: var(--text-primary);
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Messages Area */
         .messages-area {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
-            background: var(--chat-bg);
-            scroll-behavior: smooth;
+            padding: 30px;
+            background: var(--bg-secondary);
+            position: relative;
         }
 
-        .messages-area::-webkit-scrollbar {
-            width: 8px;
-        }
-
+        .messages-area::-webkit-scrollbar { width: 8px; }
         .messages-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .messages-area::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: var(--border-light);
             border-radius: 10px;
         }
-
-        .messages-area::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .messages-area::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
         }
 
         .message {
             display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            animation: messageSlide 0.3s ease-out;
+            gap: 16px;
+            margin-bottom: 30px;
+            animation: messageSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .message.user {
-            flex-direction: row-reverse;
-        }
+        .message.user { flex-direction: row-reverse; }
 
         .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 18px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .message.user .message-avatar {
-            background: var(--user-msg-bg);
+            font-size: 20px;
+            position: relative;
             color: white;
         }
 
+        .message.user .message-avatar {
+            background: var(--primary-gradient);
+            box-shadow: var(--shadow-glow);
+        }
+
         .message.bot .message-avatar {
-            background: white;
-            border: 2px solid var(--border-color);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
         }
 
         .message-content {
-            max-width: 75%;
+            max-width: 70%;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 10px;
         }
 
         .message-bubble {
-            padding: 14px 18px;
-            border-radius: 16px;
+            padding: 20px;
+            border-radius: 20px;
             line-height: 1.6;
             font-size: 15px;
             word-wrap: break-word;
+            position: relative;
             box-shadow: var(--shadow-sm);
         }
 
         .message.user .message-bubble {
-            background: var(--user-msg-bg);
+            background: linear-gradient(135deg, #4facfe 0%, #2c8ef8 100%);
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 8px;
         }
 
         .message.bot .message-bubble {
-            background: var(--bot-msg-bg);
-            color: var(--text-primary);
+            background: white;
             border: 1px solid var(--border-color);
-            border-bottom-left-radius: 4px;
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
         }
 
         .message-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             font-size: 12px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             padding: 0 8px;
         }
 
-        .message.user .message-meta {
-            justify-content: flex-end;
+        .message.user .message-meta { justify-content: flex-end; }
+
+        .analysis-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
         }
 
-        /* Query Analysis Badge */
-        .analysis-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
+        .analysis-tag {
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .analysis-badge.complex {
-            background: #fef3c7;
-            color: #92400e;
+        .tag-complex {
+            background: rgba(255, 193, 7, 0.1);
+            color: #D97706;
+            border: 1px solid rgba(255, 193, 7, 0.2);
         }
 
-        .analysis-badge.simple {
-            background: #d1fae5;
-            color: #065f46;
+        .tag-simple {
+            background: rgba(0, 212, 170, 0.1);
+            color: #059669;
+            border: 1px solid rgba(0, 212, 170, 0.2);
         }
 
-        .analysis-badge.emergency {
-            background: #fee2e2;
-            color: #991b1b;
-            animation: emergencyPulse 1.5s ease-in-out infinite;
+        .tag-emergency {
+            background: rgba(255, 71, 87, 0.1);
+            color: #DC2626;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            animation: emergencyPulse 1.5s infinite;
         }
 
         @keyframes emergencyPulse {
@@ -308,93 +477,106 @@
             50% { opacity: 0.7; }
         }
 
-        /* Typing Indicator */
         .typing-indicator {
             display: none;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 30px;
         }
 
-        .typing-indicator.active {
-            display: flex;
-        }
+        .typing-indicator.active { display: flex; }
 
         .typing-dots {
             display: flex;
-            gap: 6px;
-            padding: 14px 18px;
+            gap: 8px;
+            padding: 20px;
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
         }
 
         .typing-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: var(--primary-color);
             border-radius: 50%;
             animation: typingDot 1.4s infinite;
         }
 
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
         @keyframes typingDot {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
-            30% { transform: translateY(-10px); opacity: 1; }
+            30% { transform: translateY(-15px); opacity: 1; }
         }
 
-        /* Input Area */
         .input-area {
-            padding: 20px 24px;
-            background: white;
-            border-top: 1px solid var(--border-color);
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 25px 30px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            position: relative;
+        }
+
+        .input-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--primary-gradient);
+            opacity: 0.5;
         }
 
         .input-wrapper {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             align-items: flex-end;
         }
 
         #user-input {
             flex: 1;
-            padding: 14px 18px;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
+            padding: 18px 24px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
             font-size: 15px;
             font-family: inherit;
+            color: var(--text-primary);
             resize: none;
             max-height: 120px;
-            transition: all 0.3s ease;
-            background: var(--chat-bg);
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-sm);
         }
 
         #user-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        #user-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         #send-btn {
-            width: 52px;
-            height: 52px;
-            background: var(--bg-gradient);
+            width: 56px;
+            height: 56px;
+            background: var(--primary-gradient);
             border: none;
             border-radius: 16px;
             color: white;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition-normal);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -402,7 +584,7 @@
         }
 
         #send-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.05);
             box-shadow: var(--shadow-lg);
         }
 
@@ -411,42 +593,29 @@
             cursor: not-allowed;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .quick-actions::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .quick-btn {
-            padding: 8px 16px;
+        .welcome-message {
+            text-align: center;
+            padding: 40px;
             background: white;
-            border: 1px solid var(--border-color);
             border-radius: 20px;
-            font-size: 13px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .welcome-message h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
             color: var(--text-primary);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .quick-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            transform: translateY(-1px);
+        .welcome-message p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 20px;
         }
 
-        /* Loading Overlay */
         .loading-overlay {
             display: none;
             position: absolute;
@@ -461,206 +630,369 @@
             backdrop-filter: blur(5px);
         }
 
-        .loading-overlay.active {
-            display: flex;
-        }
+        .loading-overlay.active { display: flex; }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border-color);
+            width: 60px;
+            height: 60px;
+            border: 4px solid transparent;
             border-top-color: var(--primary-color);
+            border-right-color: var(--secondary-color);
+            border-bottom-color: var(--accent-color);
+            border-left-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1200px) {
+            .side-panel { width: 240px; }
         }
 
-        /* Responsive Design */
+        @media (max-width: 992px) {
+            .main-container { flex-direction: column; }
+            .side-panel {
+                width: 100%;
+                flex-direction: row;
+                gap: 15px;
+            }
+            .quick-actions-panel { display: none; }
+            .logo-card { flex: 1; }
+        }
+
         @media (max-width: 768px) {
-            body {
-                padding: 0;
-            }
-
-            .chat-container {
-                height: 100vh;
-                max-width: 100%;
-                border-radius: 0;
-            }
-
-            .chat-header {
-                padding: 16px 20px;
-            }
-
-            .header-text h1 {
-                font-size: 18px;
-            }
-
-            .bot-avatar {
-                width: 44px;
-                height: 44px;
-                font-size: 22px;
-            }
-
-            .messages-area {
-                padding: 16px;
-            }
-
-            .message-content {
-                max-width: 85%;
-            }
-
-            .info-banner {
-                margin: 12px 16px;
-                padding: 12px 16px;
-            }
+            .main-container { padding: 10px; }
+            .chat-header { padding: 20px; }
+            .messages-area { padding: 20px; }
+            .input-area { padding: 20px; }
+            .message-content { max-width: 85%; }
         }
 
-        /* Utility Classes */
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
 
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        /* Emergency Indicator */
-        .emergency-indicator {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            border-left: 4px solid var(--danger-color);
-            padding: 12px 16px;
-            margin: 12px 0;
-            border-radius: 10px;
-            font-size: 13px;
-            color: #991b1b;
+        .source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .emergency-alert {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--danger-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            animation: emergencyPulse 2s infinite;
+        }
+
+        .emergency-alert i {
+            font-size: 24px;
+            color: var(--danger-color);
+        }
+
+        .emergency-alert p {
+            color: var(--text-primary);
             font-weight: 600;
+        }
+
+        .speech-status {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4facfe 0%, #2c8ef8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
         }
 
-        .emergency-indicator i {
-            font-size: 18px;
-            animation: emergencyPulse 1s ease-in-out infinite;
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .quick-actions-bar {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .quick-actions-bar::-webkit-scrollbar { height: 4px; }
+
+        .quick-action-small {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition-normal);
+        }
+
+        .quick-action-small:hover {
+            background: linear-gradient(to right, rgba(79, 172, 254, 0.1), rgba(79, 172, 254, 0.2));
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" id="loading-overlay">
-            <div class="spinner"></div>
+    <div class="bg-effects">
+        <div class="floating-shapes">
+            <div class="floating-shape shape-1"></div>
+            <div class="floating-shape shape-2"></div>
+            <div class="floating-shape shape-3"></div>
         </div>
+        <div class="grid-pattern"></div>
+    </div>
 
-        <!-- Header -->
-        <div class="chat-header">
-            <div class="header-content">
-                <div class="bot-avatar">
-                    <i class="fas fa-user-md"></i>
+    <div class="speech-status hidden" id="speech-status">
+        <i class="fas fa-microphone"></i>
+        <span id="speech-text">Listening...</span>
+    </div>
+
+    <div class="main-container">
+        <div class="side-panel">
+            
+
+            <div class="quick-actions-panel">
+                <div class="quick-actions-title">
+                    <i class="fas fa-bolt"></i>
+                    <span>QUICK ACTIONS</span>
                 </div>
-                <div class="header-text">
-                    <h1>Medical AI Assistant</h1>
-                    <p>💡 Powered by Advanced AI • Chain-of-Thought Reasoning</p>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" onclick="askQuickQuestion('What are the symptoms of COVID-19?')">
+                        <i class="fas fa-virus"></i>
+                        <span>COVID-19 Symptoms</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="askQuickQuestion('How to manage diabetes?')">
+                        <i class="fas fa-syringe"></i>
+                        <span>Diabetes Management</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="askQuickQuestion('What is hypertension?')">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Hypertension Info</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="askQuickQuestion('First aid for heart attack')">
+                        <i class="fas fa-first-aid"></i>
+                        <span>Heart Attack First Aid</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="askQuickQuestion('Mental health resources')">
+                        <i class="fas fa-brain"></i>
+                        <span>Mental Health Support</span>
+                    </button>
                 </div>
             </div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="clearChat()" title="Clear Chat">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-                <button class="header-btn" onclick="toggleInfo()" title="Information">
-                    <i class="fas fa-info-circle"></i>
-                </button>
-            </div>
         </div>
 
-        <!-- Messages Area -->
-        <div class="messages-area" id="messages">
-            <!-- Welcome Message -->
-            <div class="message bot fade-in">
-                <div class="message-avatar">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="message-content">
-                    <div class="message-bubble">
-                        <p>👋 Hello! I'm your Medical AI Assistant.</p>
-                        <p style="margin-top: 8px;">I can help you understand medical conditions, symptoms, and treatments using advanced Chain-of-Thought reasoning for complex questions.</p>
-                        <p style="margin-top: 8px;"><strong>How can I assist you today?</strong></p>
+        <div class="chat-container">
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="spinner"></div>
+            </div>
+
+            <div class="chat-header">
+                <div class="header-left">
+                    <div class="ai-avatar">
+                        <i class="fas fa-robot"></i>
                     </div>
-                    <div class="message-meta">
-                        <i class="fas fa-clock"></i>
-                        <span id="welcome-time"></span>
+                    <div class="header-info">
+                        <h2>Medical AI Assistant</h2>
+                        <p>
+                            <span class="status-dot"></span>
+                            <span>Chain-of-Thought Reasoning Active • Real-time Processing</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="clearChat()" title="Clear Chat">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                    <button class="header-btn" onclick="toggleSpeechGuide()" title="Speech Guide">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-area" id="messages">
+                <div class="welcome-message fade-in">
+                    <h3>Welcome to NeuraMed AI</h3>
+                    <p>I'm your advanced medical AI assistant, powered by Chain-of-Thought reasoning and real-time medical intelligence.</p>
+                    <p>Ask me about symptoms, conditions, treatments, or any medical concerns.</p>
+                    <div class="analysis-tags" style="justify-content: center; margin-top: 20px;">
+                        <span class="analysis-tag tag-complex">
+                            <i class="fas fa-brain"></i> Complex Reasoning
+                        </span>
+                        <span class="analysis-tag tag-simple">
+                            <i class="fas fa-bolt"></i> Fast Responses
+                        </span>
+                    </div>
+                </div>
+
+                <div class="quick-actions-bar">
+                    <button class="quick-action-small" onclick="askQuickQuestion('What is diabetes?')">
+                        <i class="fas fa-question-circle"></i> Diabetes Info
+                    </button>
+                    <button class="quick-action-small" onclick="askQuickQuestion('Symptoms of flu')">
+                        <i class="fas fa-thermometer"></i> Flu Symptoms
+                    </button>
+                    <button class="quick-action-small" onclick="askQuickQuestion('How to lower blood pressure')">
+                        <i class="fas fa-heart"></i> Blood Pressure
+                    </button>
+                    <button class="quick-action-small" onclick="askQuickQuestion('Allergy treatments')">
+                        <i class="fas fa-allergies"></i> Allergies
+                    </button>
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Typing Indicator -->
-            <div class="typing-indicator" id="typing-indicator">
-                <div class="message-avatar">
-                    <i class="fas fa-robot"></i>
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea
+                        id="user-input"
+                        rows="1"
+                        placeholder="Type your medical question..."
+                        onkeypress="handleKeyPress(event)"
+                    ></textarea>
+                    <div class="send-container">
+                        <button id="send-btn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="input-area">
-            <div class="quick-actions">
-                <button class="quick-btn" onclick="askQuickQuestion('What is diabetes?')">
-                    <i class="fas fa-question-circle"></i> What is diabetes?
-                </button>
-                <button class="quick-btn" onclick="askQuickQuestion('Symptoms of hypertension')">
-                    <i class="fas fa-heartbeat"></i> Symptoms of hypertension
-                </button>
-                <button class="quick-btn" onclick="askQuickQuestion('How to prevent heart disease?')">
-                    <i class="fas fa-heart"></i> Heart disease prevention
-                </button>
-                <button class="quick-btn" onclick="askQuickQuestion('Side effects of antibiotics')">
-                    <i class="fas fa-pills"></i> Antibiotic side effects
-                </button>
-            </div>
-            <div class="input-wrapper">
-                <textarea 
-                    id="user-input" 
-                    rows="1" 
-                    placeholder="Ask a medical question..."
-                    onkeypress="handleKeyPress(event)"
-                ></textarea>
-                <button id="send-btn" onclick="sendMessage()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize welcome time
-        document.getElementById('welcome-time').textContent = formatTime(new Date());
+        let recognition = null;
+        let isListening = false;
+        let speechTimeout = null;
 
-        // Auto-resize textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            initSpeechRecognition();
+            setTimeout(() => {
+                document.getElementById('user-input').focus();
+            }, 500);
+            animateElements();
+        });
+
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = function() {
+                    document.getElementById('speech-status').classList.remove('hidden');
+                    isListening = true;
+                };
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('user-input').value = transcript;
+
+                    if (event.results[0].isFinal) {
+                        setTimeout(() => {
+                            sendMessage();
+                        }, 500);
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    stopSpeechRecognition();
+                    showNotification('Speech recognition error: ' + event.error, 'error');
+                };
+
+                recognition.onend = function() {
+                    stopSpeechRecognition();
+                };
+            } else {
+                console.warn('Speech recognition not supported in this browser');
+            }
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                showNotification('Speech recognition is not supported in your browser', 'warning');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                clearTimeout(speechTimeout);
+                speechTimeout = setTimeout(() => {
+                    if (isListening) {
+                        recognition.stop();
+                        showNotification('Speech recognition timeout', 'info');
+                    }
+                }, 10000);
+            }
+        }
+
+        function stopSpeechRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+            document.getElementById('speech-status').classList.add('hidden');
+            isListening = false;
+            clearTimeout(speechTimeout);
+        }
+
         const textarea = document.getElementById('user-input');
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
-
-        function formatTime(date) {
-            return date.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -674,30 +1006,30 @@
             sendMessage();
         }
 
-        function toggleInfo() {
-            const banner = document.getElementById('info-banner');
-            banner.style.display = banner.style.display === 'none' ? 'flex' : 'none';
-        }
-
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const message = input.value.trim();
-            
+
             if (!message) return;
 
-            // Disable send button
             const sendBtn = document.getElementById('send-btn');
             sendBtn.disabled = true;
 
-            // Add user message
             addMessage('user', message);
-            
-            // Clear input and reset height
+
             input.value = '';
             input.style.height = 'auto';
 
-            // Show typing indicator
             showTyping(true);
+
+            const emergencyKeywords = ['heart attack', 'stroke', 'bleeding', 'unconscious', 'difficulty breathing', 'chest pain'];
+            const isEmergency = emergencyKeywords.some(keyword =>
+                message.toLowerCase().includes(keyword)
+            );
+
+            if (isEmergency) {
+                addEmergencyAlert();
+            }
 
             try {
                 const response = await fetch('/chat', {
@@ -710,7 +1042,6 @@
 
                 const data = await response.json();
 
-                // Hide typing indicator
                 showTyping(false);
 
                 if (data.status === 'success') {
@@ -724,9 +1055,8 @@
                     addMessage('bot', '❌ ' + (data.message || 'An error occurred. Please try again.'));
                 }
             } catch (error) {
-                console.error('Error:', error);
                 showTyping(false);
-                addMessage('bot', '❌ Connection error. Please check your connection and try again.');
+                addMessage('bot', '⚠️ Connection error. Please check your connection and try again.');
             } finally {
                 sendBtn.disabled = false;
             }
@@ -737,40 +1067,74 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
 
-            const avatarIcon = sender === 'user' ? 
-                '<i class="fas fa-user"></i>' : 
-                '<i class="fas fa-robot"></i>';
+            const avatarIcon = sender === 'user'
+                ? '<i class="fas fa-user"></i>'
+                : '<i class="fas fa-robot"></i>';
 
-            let metaInfo = `<i class="fas fa-clock"></i><span>${formatTime(new Date())}</span>`;
+            let metaInfo = `
+                <div class="message-meta">
+                    <span>${formatTime(new Date())}</span>
+            `;
 
-            // Add analysis badge if available
             if (metadata.queryAnalysis) {
                 const complexity = metadata.queryAnalysis.complexity;
                 const urgency = metadata.queryAnalysis.urgency;
-                
+
+                metaInfo += '<div class="analysis-tags">';
+
                 if (urgency === 'emergency') {
-                    metaInfo += `<span class="analysis-badge emergency"><i class="fas fa-exclamation-triangle"></i> Emergency</span>`;
-                } else if (complexity === 'complex') {
-                    metaInfo += `<span class="analysis-badge complex"><i class="fas fa-brain"></i> Complex CoT</span>`;
-                } else if (complexity === 'simple') {
-                    metaInfo += `<span class="analysis-badge simple"><i class="fas fa-check"></i> Simple</span>`;
+                    metaInfo += `<span class="analysis-tag tag-emergency">
+                        <i class="fas fa-exclamation-triangle"></i> Emergency
+                    </span>`;
                 }
+
+                if (complexity === 'complex') {
+                    metaInfo += `<span class="analysis-tag tag-complex">
+                        <i class="fas fa-brain"></i> Complex Analysis
+                    </span>`;
+                } else if (complexity === 'simple') {
+                    metaInfo += `<span class="analysis-tag tag-simple">
+                        <i class="fas fa-bolt"></i> Direct Answer
+                    </span>`;
+                }
+
+                if (metadata.sourceCount > 0) {
+                    metaInfo += `<span class="source-badge">
+                        <i class="fas fa-database"></i> ${metadata.sourceCount} Sources
+                    </span>`;
+                }
+
+                metaInfo += '</div>';
             }
 
-            // Add source count if available
-            if (metadata.sourceCount > 0) {
-                metaInfo += `<span style="font-size: 11px;"><i class="fas fa-database"></i> ${metadata.sourceCount} sources</span>`;
-            }
+            metaInfo += '</div>';
 
             messageDiv.innerHTML = `
                 <div class="message-avatar">${avatarIcon}</div>
                 <div class="message-content">
                     <div class="message-bubble">${content}</div>
-                    <div class="message-meta">${metaInfo}</div>
+                    ${metaInfo}
                 </div>
             `;
 
             messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            setTimeout(() => {
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0)';
+            }, 10);
+        }
+
+        function addEmergencyAlert() {
+            const messagesArea = document.getElementById('messages');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'emergency-alert fade-in';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>⚠️ Emergency keywords detected. If this is a real emergency, please call emergency services immediately.</p>
+            `;
+            messagesArea.appendChild(alertDiv);
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
@@ -781,13 +1145,21 @@
             } else {
                 indicator.classList.remove('active');
             }
-            
+
             const messagesArea = document.getElementById('messages');
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }).toLowerCase();
+        }
+
         async function clearChat() {
-            if (!confirm('Are you sure you want to clear the chat history?')) {
+            if (!confirm('Are you sure you want to clear the conversation?')) {
                 return;
             }
 
@@ -799,26 +1171,89 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    // Clear messages except welcome
                     const messagesArea = document.getElementById('messages');
-                    const messages = messagesArea.querySelectorAll('.message');
-                    messages.forEach((msg, index) => {
-                        if (index > 0) { // Keep welcome message
+                    const messages = messagesArea.querySelectorAll('.message, .emergency-alert');
+                    messages.forEach((msg) => {
+                        if (!msg.classList.contains('welcome-message')) {
                             msg.remove();
                         }
                     });
 
-                    addMessage('bot', '✅ Chat history cleared! How can I help you today?');
+                    addMessage('bot', '✅ Conversation cleared. How can I assist you with medical information today?');
                 }
             } catch (error) {
-                console.error('Error clearing chat:', error);
-                alert('Failed to clear chat history. Please try again.');
+                showNotification('Failed to clear conversation. Please try again.', 'error');
             }
         }
 
-        // Focus input on load
-        window.addEventListener('load', () => {
-            document.getElementById('user-input').focus();
+        function animateElements() {
+            const cards = document.querySelectorAll('.logo-card, .quick-actions-panel');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+        }
+
+        function toggleSpeechGuide() {
+            addMessage('bot', `
+                <h4>🎤 Voice Input Guide</h4>
+                <p><strong>How to use voice input:</strong></p>
+                <ul>
+                    <li>Click the microphone keyboard shortcut to start speaking</li>
+                    <li>Speak clearly and naturally</li>
+                    <li>Your speech will be converted to text automatically</li>
+                    <li>The system will auto-send if it detects the end of your question</li>
+                    <li>Stop speaking or press the shortcut again to stop</li>
+                </ul>
+            `);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `speech-status ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                toggleSpeechGuide();
+            }
+
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                clearChat();
+            }
+
+            if (e.ctrlKey && e.key === ' ') {
+                e.preventDefault();
+                toggleSpeechRecognition();
+            }
+
+            if (e.key === 'Escape') {
+                document.getElementById('user-input').focus();
+            }
+        });
+
+        document.addEventListener('mouseover', function(e) {
+            if (e.target.classList.contains('message-bubble')) {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.transition = 'transform 0.2s ease';
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            if (e.target.classList.contains('message-bubble')) {
+                e.target.style.transform = 'translateY(0)';
+            }
         });
     </script>
 </body>
