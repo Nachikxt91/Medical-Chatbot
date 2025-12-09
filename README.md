@@ -52,11 +52,10 @@ The exact stack may vary, but the Space is configured to run via Docker on port 
 You can run the same image locally before pushing to Spaces.
 
 ### 1. Clone the repo
+  git clone <your-repo-url>
+  cd <your-repo-folder>
 
-git clone <your-repo-url>
-cd <your-repo-folder>
 
-text
 
 ### 2. Set environment variables
 
@@ -67,9 +66,9 @@ MODEL_NAME=llama-3.1-8b-instant
 VECTOR_DB_API_KEY=your_vector_db_key # optional
 VECTOR_DB_INDEX=medical-chatbot # optional
 
-text
 
 For Hugging Face Spaces, put these keys in the **Space settings → Variables** UI rather than in the repo.
+
 
 ### 3. Install and run (non‑Docker)
 
@@ -78,26 +77,24 @@ pip install -r requirements.txt
 FastAPI example
 uvicorn app.main:app --host 0.0.0.0 --port 7860
 
-text
-
 Then open `http://localhost:7860` in your browser or hit the API from a client.
 
 ---
 
 ## 🐳 Docker Usage
-
 The Space is configured to use Docker (`sdk: docker` with `app_port: 7860`).
 
-### Build and run locally
 
+
+### Build and run locally
 docker build -t medical-chatbot .
 docker run -p 7860:7860 --env-file .env medical-chatbot
 
-text
 
 Hugging Face Spaces will perform a similar build automatically from this `Dockerfile`.
 
 ---
+
 
 ## 📡 API Example
 
@@ -111,7 +108,6 @@ curl -X POST "http://localhost:7860/chat"
 ]
 }'
 
-text
 
 Example response (shape, not actual medical advice):
 
@@ -126,7 +122,8 @@ Example response (shape, not actual medical advice):
 }
 }
 
-text
+
+
 
 Adjust the path and payload to match your actual API.
 
@@ -141,20 +138,6 @@ Adjust the path and payload to match your actual API.
 
 ---
 
-## 🧪 Testing
-
-Basic testing commands (adapt as needed):
-
-Unit tests
-pytest
-
-Linting
-ruff check .
-
-text
-
----
-
 ## 🔐 Security & Privacy
 
 - No real API keys are stored in the repository; they are injected via environment variables.  
@@ -164,17 +147,11 @@ text
 ---
 
 ## 📜 License
-
-Specify your license here, for example:
-
 MIT License
 Copyright (c) 2025 <Your Name>
-
-text
 
 ---
 
 ## 🙋‍♂️ Maintainer
-
 Built by an AI/ML engineer focusing on production‑grade RAG systems and healthcare‑oriented chatbots.  
 Feel free to open issues or pull requests to improve the system.
