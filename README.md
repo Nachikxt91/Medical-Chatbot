@@ -147,8 +147,7 @@ Adjust the path and payload to match your actual API.
 ---
 
 ## 📜 License
-MIT License
-Copyright (c) 2025 <Your Name>
+Apache-2.0 license
 
 ---
 
