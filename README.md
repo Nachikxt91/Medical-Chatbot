@@ -46,27 +46,6 @@ The exact stack may vary, but the Space is configured to run via Docker on port 
 
 ---
 
-## 📂 Project Structure (example)
-
-.
-├─ app/
-│ ├─ main.py # API / web entrypoint
-│ ├─ rag_pipeline.py # Retrieval + generation logic
-│ ├─ router.py # HTTP routes / endpoints
-│ ├─ prompts.py # System and safety prompts
-│ └─ utils.py # Helpers
-├─ data/
-│ └─ medical_knowledge/ # Chunked, preprocessed documents
-├─ models/ # Embeddings / index files (if stored locally)
-├─ requirements.txt
-├─ Dockerfile
-└─ README.md
-
-text
-
-Adjust the tree to match your repository if needed.
-
----
 
 ## 🚀 Running Locally
 
